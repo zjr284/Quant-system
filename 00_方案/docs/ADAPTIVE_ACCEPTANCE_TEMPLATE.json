@@ -1,0 +1,10 @@
+{
+  "observation_30_days_passed": false,
+  "backtest_costs_and_stages_passed": false,
+  "shadow_decisions_replay_reviewed": false,
+  "testnet_lifecycle_acceptance_passed": false,
+  "reconciliation_passed": false,
+  "human_approval": false,
+  "approved_profiles": ["sma_24_72", "cash"],
+  "approval_id": ""
+}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Webhook alert for failed service %i
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/quant-alert.env
+ExecStart=/usr/bin/python3 /opt/quant/scripts/systemd_alert.py %i
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+StandardOutput=journal
+StandardError=journal

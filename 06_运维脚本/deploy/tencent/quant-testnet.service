@@ -1,0 +1,37 @@
+[Unit]
+Description=Binance Spot Testnet hourly strategy executor (testnet only)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=quant-testnet
+Group=quant-testnet
+WorkingDirectory=/opt/quant
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONNOUSERSITE=1
+UnsetEnvironment=BINANCE_API_KEY BINANCE_API_SECRET BINANCE_BASE_URL
+EnvironmentFile=/etc/quant-testnet.env
+StateDirectory=quant-testnet
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/opt/quant-venv/bin/quant crypto testnet-run --db /var/lib/quant-testnet/trading.sqlite --fast 24 --slow 72 --max-order-quote 25 --max-daily-loss-quote 10 --max-price-deviation 0.005 --enable-testnet --confirm-testnet-orders I_ACCEPT_TESTNET_ORDERS
+Restart=on-failure
+RestartSec=30
+RestartPreventExitStatus=2
+TimeoutStopSec=30
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/quant-testnet
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=100
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_root="$(cd -- "$(dirname -- "$0")" && pwd)"
+export GIT_DIR="$project_root/.git-snapshot"
+export GIT_WORK_TREE="$project_root"
+exec git "$@"
