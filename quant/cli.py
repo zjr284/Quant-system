@@ -88,6 +88,17 @@ def parser():
     q.add_argument("--start", required=True, help="UTC 日期或小时，例如 2025-10-28")
     q.add_argument("--end", required=True, help="UTC 右开区间日期/小时")
     q.add_argument("--data-dir", default="data/crypto")
+    q = cc.add_parser("data-check", help="检查小时 CSV 完整性、对齐、时效并生成 SHA256 清单")
+    q.add_argument("--data-dir", default="01_数据提取/data/crypto")
+    q.add_argument("--symbols", nargs="+", required=True, help="CSV 文件名前缀，例如 BTCUSDT ETHUSDT")
+    q.add_argument("--purpose", choices=["research", "live"], default="research")
+    q.add_argument("--source", required=True, help="数据来源声明，会写入检查清单；不会验证来源真实性")
+    q.add_argument("--min-days", type=float, default=365)
+    q.add_argument("--max-age-hours", type=float, default=2,
+                    help="live 模式最新已收盘 K 线最大年龄；research 模式忽略")
+    q.add_argument("--no-require-exact-alignment", action="store_true",
+                    help="多币回测前不建议关闭；关闭后只逐文件检查")
+    q.add_argument("--output", default="99_结果/runs/data-check-v1.json")
     q = cc.add_parser("strategy-backtest", help="多币种、多策略、多周期研究回测；不连接账户或下单")
     q.add_argument("--data-dir", required=True)
     q.add_argument("--universe-file", required=True)
@@ -283,6 +294,25 @@ def main(argv=None):
                 from .crypto.research import download_hourly_history
                 emit(download_hourly_history(args.symbols, args.start, args.end, args.data_dir))
                 return 0
+            if args.crypto_action == "data-check":
+                from .crypto.data_quality import check_hourly_csvs
+                symbols = list(dict.fromkeys(s.upper() for s in args.symbols))
+                if len(symbols) != len(args.symbols):
+                    raise ValueError("Duplicate symbols are not allowed")
+                output = Path(args.output)
+                if output.exists():
+                    raise ValueError("Data-check output already exists; choose a new versioned path")
+                result = check_hourly_csvs(
+                    files={s: Path(args.data_dir) / f"{s}-1h.csv" for s in symbols},
+                    purpose=args.purpose, source_label=args.source, min_days=args.min_days,
+                    max_age_hours=args.max_age_hours,
+                    require_exact_alignment=not args.no_require_exact_alignment,
+                    code_path=Path(__file__).with_name("crypto") / "data_quality.py")
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
+                                  encoding="utf-8")
+                emit({"output": str(output), **result})
+                return 0 if result["passed"] else 2
             if args.crypto_action == "strategy-backtest":
                 from .crypto.research import strategy_backtest
                 timeframes = tuple(x.strip() for x in args.timeframes.split(",") if x.strip())

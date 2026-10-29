@@ -33,6 +33,8 @@ python3 -m venv .venv
 
 ## 获取行情与跑档位回测
 
+开始下载、清洗、冻结行情前，先按 [`数据自检 SOP`](01_数据提取/数据自检SOP.md) 执行来源记录、CSV 自检、SHA256 冻结和异常处理。可用 `quant crypto data-check --help` 查看数据检查命令。
+
 ```bash
 .venv/bin/quant crypto fetch-history \
   --symbols BTCUSDT ETHUSDT \

@@ -1,3 +1,5 @@
 # 数据提取
 
-`data/crypto/` 与 `data/crypto-research-20261028/` 保存加密货币小时 K 线与研究快照。采集入口在 `../06_运维脚本/scripts/` 和 `../quant/crypto/market.py`、`research.py`。更新后应生成数据清单和校验哈希，不能覆盖已用于研究的冻结快照。
+本目录保存加密货币小时 K 线。采集入口为 `quant crypto fetch-history`；验证、来源抽查、冻结和异常处理按 [`数据自检 SOP`](数据自检SOP.md) 执行。
+
+CSV 和研究快照可能包含大量数据，默认不提交 Git。每个数据批次使用独立版本目录；不得覆盖已经用于研究的冻结快照。
